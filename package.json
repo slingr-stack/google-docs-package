@@ -1,6 +1,6 @@
 {
-    "name": "skeleton",
-    "label": "Skeleton Package",
+        "name": "googledocs",
+    "label": "Google Docs Package",
     "dependencies": [
         {
             "type": "service",
@@ -11,65 +11,69 @@
         {
             "type": "package",
             "name": "oauth",
-            "version": "v1.0.19"
+            "version": "v1.0.24"
         }
     ],
     "configurationBuilder": "/configurationBuilder.js",
     "configuration": [
         {
-            "name": "SKELETON_API_BASE_URL",
-            "label": "Skeleton Api Url",
+            "label": "Client Id",
+            "name": "clientId",
+            "description": "The ID for your client application registered with the API provider.",
+            "required": "true",
+            "type": "text"
+        },
+        {
+            "label": "Client Secret",
+            "name": "clientSecret",
+            "description": "The client secret given to you by the API provider",
+            "required": "true",
+            "type": "text"
+        },
+        {
+            "label": "Scope",
+            "name": "scope",
+            "description": "The scope of access you are requesting, which may include multiple space-separated values.",
+            "required": "true",
+            "type": "text"
+        },
+        {
+            "label": "State",
+            "name": "state",
+            "description": "An opaque value to prevent cross-site request forgery.",
+            "type": "text"
+        },
+        {
+            "name": "oauthCallback",
+            "label": "OAuth callback",
+            "description": "The OAuth callback to configure in your Google Docs App",
             "type": "label",
-            "value": "https://example.com/"
+            "value": "config.AUTH_CALLBACK_URL+'/authCallback'"
         },
         {
-            "name": "choice",
-            "label": "Choice",
-            "required": false,
-            "defaultValue": "true",
-            "type": "buttonsGroup",
-            "typeOptions": {
-                "allowCustom": true,
-                "possibleValues": [
-                    {
-                        "label": "True",
-                        "name": "true"
-                    },
-                    {
-                        "label": "False",
-                        "name": "false"
-                    },
-                    {
-                        "label": "Other",
-                        "name": "other"
-                    }
-                ]
-            }
-        },
-        {
-            "name": "text",
-            "label": "Text",
-            "type": "text",
-            "required": "false",
-            "visibility": "config.choice == 'true'"
-        },
-        {
-            "name": "info",
-            "label": "info",
+            "name": "webhooksUrl",
+            "label": "Webhooks URL",
+            "description": "The URL to configure in webhooks of your Google Docs App",
             "type": "label",
-            "value": "'info'"
+            "value": "config.WEBHOOK_URL"
+        },
+        {
+            "name": "GOOGLE_DOCS_API_BASE_URL",
+            "label": "Google Docs Api Url",
+            "type": "label",
+            "value": "https://docs.googleapis.com/v1"
         }
     ],
     "events": [
         {
             "label": "Webhook",
             "name": "webhook",
-            "description": "Event triggered when there is a webhook coming from PandaDoc."
+            "description": "Happens when Google Docs sends a webhook to the package."
         },
         {
-            "label": "Callback",
-            "name": "callback",
-            "description": "Happens when a async process is finished"
+            "label": "User connected to Google Docs",
+            "name": "userConnected",
+            "description": "Happens when a user successfully connects to Google Docs."
         }
     ],
     "metadata": [
@@ -80,23 +84,13 @@
         },
         {
             "type": "listener",
-            "namespace": "webhook",
-            "path": "/listeners/webhook.js"
+            "namespace": "listeners",
+            "path": "/listeners/listeners.js"
         },
         {
             "type": "flowStep",
-            "namespace": "apiCallSkeleton",
-            "path": "/flowSteps/apiCallSkeleton"
-        },
-        {
-            "type": "flowStep",
-            "namespace": "customFlow",
-            "path": "/flowSteps/customFlow"
-        },
-        {
-            "type": "uiService",
-            "namespace": "testUiService",
-            "path": "/uiServices/testUiService"
+            "namespace": "apiCallGoogleDocs",
+            "path": "/flowSteps/apiCallGoogleDocs"
         }
     ]
 }

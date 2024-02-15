@@ -20,7 +20,7 @@ var httpService = dependencies.http;
  * {number} connectionTimeout, Read timeout interval, in milliseconds.
  * {number} readTimeout, Connect timeout interval, in milliseconds.
  */
-step.apiCallSkeleton = function (inputs) {
+step.apiCallGoogleDocs = function (inputs) {
 
 	var inputsLogic = {
 		headers: inputs.headers || [],
@@ -59,6 +59,7 @@ step.apiCallSkeleton = function (inputs) {
 
 	options= setApiUri(options);
 	options= setRequestHeaders(options);
+	options = setAuthorization(options);
 
 	switch (inputsLogic.method.toLowerCase()) {
 		case 'get':
@@ -117,86 +118,45 @@ function stringToObject (obj) {
 	return null;
 }
 
+/****************************************************
+ Private API
+ ****************************************************/
+
 function setApiUri(options) {
-	var API_URL = config.get("SKELETON_API_BASE_URL");
-	var url = options.path || "";
-	options.url = API_URL + url;
-	sys.logs.debug('[skeleton] Set url: ' + options.path + "->" + options.url);
+	let url = options.path || "";
+	options.url = config.get("GOOGLE_DOCS_API_BASE_URL") + url;
+	sys.logs.debug('[googledocs] Set url: ' + options.path + "->" + options.url);
 	return options;
 }
 
 function setRequestHeaders(options) {
-	var headers = options.headers || {};
-
-	sys.logs.debug('[skeleton] Set header Bearer');
+	let headers = options.headers || {};
 	headers = mergeJSON(headers, {"Content-Type": "application/json"});
-	headers = mergeJSON(headers, {"Authorization": "Bearer "+getAccessTokenForAccount()});
-
-	if (headers.Accept === undefined || headers.Accept === null || headers.Accept === "") {
-		sys.logs.debug('[skeleton] Set header accept');
-		headers = mergeJSON(headers, {"Accept": "application/json"});
-	}
 
 	options.headers = headers;
 	return options;
 }
 
-function getAccessTokenForAccount(account) {
-	account = account || "account";
-	sys.logs.info('[skeleton] Getting access token for account: '+account);
-	var installationJson = sys.storage.get('installationInfo-Skeleton---'+account) || {id: null};
-	var token = installationJson.token || null;
-	var expiration = installationJson.expiration || 0;
-	if (!token || expiration < new Date().getTime()) {
-		sys.logs.info('[skeleton] Access token is expired or not found. Getting new token');
-		var res = httpService.post(
-			{
-				url: "https://oauth2.googleapis.com/token",
-				headers: {
-					'Content-Type': 'application/x-www-form-urlencoded'
-				},
-				body: {
-					grant_type: 'urn:ietf:params:oauth:grant-type:jwt-bearer',
-					assertion: getJsonWebToken()
-				}
-			});
-		token = res.access_token;
-		var expires_at = res.expires_in;
-		expiration = new Date(new Date(expires_at) - 1 * 60 * 1000).getTime();
-		installationJson = mergeJSON(installationJson, {"token": token, "expiration": expiration});
-		sys.logs.info('[skeleton] Saving new token for account: ' + account);
-		sys.storage.replace('installationInfo-Skeleton---'+account, installationJson);
-	}
-	return token;
-}
+function setAuthorization(options) {
+	let authorization = options.authorization || {};
+	sys.logs.debug('[googledocs] setting authorization');
+	let pkgConfig = config.get();
+	sys.logs.debug('[googledocs] config: '+JSON.stringify(pkgConfig));
+	sys.logs.debug('[googledocs] config id: '+JSON.stringify(pkgConfig.id));
 
-function getJsonWebToken() {
-	var currentTime = new Date().getTime();
-	var futureTime = new Date(currentTime + ( 10 * 60 * 1000)).getTime();
-	var scopeProp= config.get("scope");
-	var scopes;
-	if (!!scopeProp) {
-		scopes = scopeProp.map(function (s) {
-			return "https://www.googleapis.com/auth/" + s;
-		});
-	}
-	var scopesGlobal = scopes.join(" ");
-	return sys.utils.crypto.jwt.generate(
-		{
-			iss: config.get("serviceAccountEmail"),
-			aud: GOOGLEWORKSPACE_API_AUTH_URL,
-			scope: scopesGlobal,
-			iat: currentTime,
-			exp: futureTime
-		},
-		config.get("privateKey"),
-		"RS256"
-	)
+	authorization = mergeJSON(authorization, {
+		type: "oauth2",
+		accessToken: sys.storage.get(
+			'installationInfo-googledocs-User-'+sys.context.getCurrentUserRecord().id() + ' - access_token',{decrypt:true}),
+		headerPrefix: "Bearer"
+	});
+	options.authorization = authorization;
+	return options;
 }
 
 function mergeJSON (json1, json2) {
 	var result = {};
-	var key;
+	let key;
 	for (key in json1) {
 		if(json1.hasOwnProperty(key)) result[key] = json1[key];
 	}

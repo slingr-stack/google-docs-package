@@ -1,8 +1,8 @@
 {
-	"label": "API call to skeleton",
-	"name": "apiCallSkeleton",
+	"label": "API call to Google Docs",
+	"name": "apiCallGoogleDocs",
 	"category": "integrations",
-	"description": "This flow step will send generic request to skeleton.",
+	"description": "This flow step will send generic request to googledocs.",
 	"inputs": [
 		{
 			"label": "Method",
