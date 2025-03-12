@@ -159,7 +159,7 @@ let googleDocs = function (options) {
  ****************************************************/
 
 function setApiUri(options) {
-    let API_URL = config.get("GOOGLEDOCS_API_AUTH_URL");
+    let API_URL = config.get("GOOGLE_DOCS_API_BASE_URL");
     let url = options.path || "";
     options.url = API_URL + url;
     sys.logs.debug('[googledocs] Set url: ' + options.path + "->" + options.url);
