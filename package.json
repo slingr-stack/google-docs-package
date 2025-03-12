@@ -1,34 +1,71 @@
 {
     "name": "googledocs",
-    "label": "Google Docs Package",
+    "label": "Google Docs",
     "dependencies": [
         {
             "type": "service",
             "name": "http",
-            "version": "v1.3.7",
-            "instanceId": "shared"
+            "version": "v1.8.5"
         },
         {
             "type": "package",
             "name": "oauth",
-            "version": "v1.0.24"
+            "version": "v1.0.34"
         }
     ],
     "configurationBuilder": "/configurationBuilder.js",
     "configuration": [
         {
+            "name": "authenticationMethod",
+            "label": "Authentication Method",
+            "required": true,
+            "defaultValue": "oAuth2",
+            "type": "buttonsGroup",
+            "typeOptions": {
+                "allowCustom": false,
+                "possibleValues": [
+                    {
+                        "label": "Service Account",
+                        "name": "serviceAccount"
+                    },
+                    {
+                        "label": "OAuth 2.0",
+                        "name": "oAuth2"
+                    }
+                ]
+            }
+        },
+        {
+            "name": "serviceAccountEmail",
+            "label": "Service Account Email",
+            "description": "The email from service account created",
+            "type": "text",
+            "required": "config.authenticationMethod == 'serviceAccount'",
+            "visibility": "config.authenticationMethod == 'serviceAccount'"
+        },
+        {
+            "name": "privateKey",
+            "label": "Private Key",
+            "description": "The private key associated to the service account",
+            "type": "password",
+            "required": "config.authenticationMethod == 'serviceAccount'",
+            "visibility": "config.authenticationMethod == 'serviceAccount'"
+        },
+        {
             "label": "Client Id",
             "name": "clientId",
             "description": "The ID for your client application registered with the API provider.",
             "required": "true",
-            "type": "text"
+            "type": "text",
+            "visibility": "config.authenticationMethod == 'oAuth2'"
         },
         {
             "label": "Client Secret",
             "name": "clientSecret",
             "description": "The client secret given to you by the API provider",
             "required": "true",
-            "type": "text"
+            "type": "text",
+            "visibility": "config.authenticationMethod == 'oAuth2'"
         },
         {
             "label": "Scope",
@@ -66,11 +103,6 @@
     ],
     "events": [
         {
-            "label": "Webhook",
-            "name": "webhook",
-            "description": "Happens when Google Docs sends a webhook to the package."
-        },
-        {
             "label": "User connected to Google Docs",
             "name": "userConnected",
             "description": "Happens when a user successfully connects to Google Docs."
@@ -83,14 +115,9 @@
             "path": "/scripts/api.js"
         },
         {
-            "type": "listener",
-            "namespace": "listeners",
-            "path": "/listeners/webhook.js"
-        },
-        {
-            "type": "flowStep",
-            "namespace": "apiCallGoogleDocs",
-            "path": "/flowSteps/apiCallGoogleDocs"
+            "type": "script",
+            "namespace": "utils",
+            "path": "/scripts/utils.js"
         }
     ]
 }
