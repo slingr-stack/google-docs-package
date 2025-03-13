@@ -1,212 +1,153 @@
-<table class="table" style="margin-top: 10px">
-    <thead>
-    <tr>
-        <th>Title</th>
-        <th>Last Updated</th>
-        <th>Summary</th>
-    </tr>
-    </thead>
-    <tbody>
-    <tr>
-        <td>Google Docs package</td>
-        <td>February 15, 2024</td>
-        <td>Detailed description of the API of the Google Docs package.</td>
-    </tr>
-    </tbody>
-</table>
-
 # Overview
-Reads and writes Google Docs documents.
 
-# Javascript API
+Repo: [https://github.com/slingr-stack/google-docs-package](https://github.com/slingr-stack/google-docs-package)
 
-The Javascript API of the Google Docs package has two pieces:
+This package allows direct access to the [Google Docs API](https://developers.google.com/docs/api/reference/rest?hl=es-419).
 
-- **HTTP requests**
-- **Flow steps**
+The features available in this package are:
+
+- Authentication and authorization
+- Direct access to the Google Docs API
+
+## Configuration
+
+To use the Google Docs package, you must create an app in the [Google Developer Console](https://console.developers.google.com)
+by following these instructions:
+
+- Create a Google Cloud project for your Google Docs app.
+- Enable the Google Docs API in your Google Cloud project.
+- Create a service account and credentials and delegate domain-wide authority to it (assign ONLY the necessary scopes to your service account) [Click here for the instructions](https://developers.google.com/workspace/guides/create-credentials?hl=es-419#service-account).
+- Download the JSON file with the service account credentials to get the service account private key.
+
+Otherwise, if you plan to use OAuth 2.0 authentication method:
+
+- Enable the Google Docs API in your Google Cloud project.
+- Create a Client ID OAuth 2.0 account.
+- Copy the Client ID and Client Secret of the package.
+
+Note that the client must have access to the Google Docs resources. If you try to access to a resource that the user does not own
+  the request will result in a 404 or 403 unauthorized error.
+
+To successfully use the Google Docs package through a Service Account, please note the following requirements:
+
+### Domain-Wide Delegation (If you want to access all users' documents within your organization):
+If you want to allow the Service Account to access the documents of all users within your domain (Google Workspace/GSuite), you need to configure Domain-Wide Delegation for the Service Account. This allows the Service Account to act on behalf of users in your organization.
+
+#### Steps to Set Up Domain-Wide Delegation:
+Enable Domain-Wide Delegation for the Service Account:
+
+1. Go to the Google Cloud Console. Navigate to IAM & Admin > Service Accounts. Select your Service Account and click on it. Under the Service Account details, enable Domain-Wide Delegation. Note the Client ID of the Service Account.
+
+Configure Delegation in the Google Admin Console:
+
+2. Go to the Google Admin Console (you need to be a super administrator). Navigate to Security > API Controls. Under "Domain-wide delegation", click Manage Domain Wide Delegation. Add the Client ID of your Service Account. Assign the necessary scopes (permissions) that you want the Service Account to access, such as https://www.googleapis.com/auth/documents for Google Docs access.
+   Share Individual User's Documents with the Service Account (If you want to access a specific user's document):
+   If you prefer to limit access to a specific user's document, you can share that document directly with the Service Account.
+
+#### Steps to Share a Document with the Service Account:
+Go to Google Docs:
+
+1. Open Google Docs with the user account whose document you want to share.
+   Share the Document:
+
+2. In the document you want to share, click the "Share" button in the upper-right corner. In the "Share with people and groups" section, add the email address of the Service Account (typically in the format your-service-account@your-project.iam.gserviceaccount.com).
+
+3. Set the appropriate permissions, such as "Viewer", "Commenter", or "Editor" (depending on your needs). Ensure you grant "Editor" permissions if you want the Service Account to make changes to the document.
+
+## Configuration Parameters
+
+#### Authentication Method
+Allows you to choose between Account Service and OAuth 2.0 authorization methods.
+
+**Name**: `authenticationMethod`
+**Type**: buttonsGroup
+**Mandatory**: true
+
+#### Service Account Email
+The email created for the service account, it shows up when Service Account authorization method is enabled.
+
+**Name**: `serviceAccountEmail`
+**Type**: text
+**Mandatory**: true
+
+#### Private Key
+The private key associated with the service account, it shows up when Service Account authorization method is enabled.
+
+**Name**: `privateKey`
+**Type**: password
+**Mandatory**: true
+
+#### Client ID
+The ID for your client application registered with the API provider, it shows up when OAuth 2.0 authorization method is enabled.
+
+**Name**: `clientId`
+**Type**: text
+**Mandatory**: true
+
+#### Client Secret
+The client secret given to you by the API provider, it shows up when OAuth 2.0 authorization method is enabled.
+
+**Name**: `clientSecret`
+**Type**: password
+**Mandatory**: true
+
+#### OAuth Callback
+The OAuth callback to configure in your Google Docs App. it shows up when OAuth 2.0 authorization method is enabled.
+
+**Name**: `oauthCallback`
+**Type**: label
+
+#### Google Docs API URL
+The URL of the Google Docs API where the requests are performed.
+
+**Name**: `GOOGLE_DOCS_API_BASE_URL`
+**Type**: label
+
+#### Scope
+The scope of access you are requesting.
+
+**Name**: `scope`
+**Type**: text
+**Mandatory**: true
+
+
+### Storage Value And Offline Mode
+
+By default, the `Service Account` authorization method is used. When using this method, you can directly call the following method to retrieve the access token, without requiring any additional actions:
+
+`pkg.googledocs.api.getAccessToken();`
+
+This will return the access token, which will be securely stored in the application's storage and associated with a user by their ID.
+
+If you have enabled the `OAuth 2.0` authorization method, the same method is used. The difference is that the Google Docs package includes the `&access_type=offline` parameter, which allows the application to request a refresh token. This happens when calling the UI service (which should run during runtime, for example, by invoking the method within an action) to log in to the application.
+
+The Google service will return an object containing both the access token and the refresh token. Each token will be stored in the app's storage (accessible via the Monitor), where you can view them encrypted and associated with the user by ID.
+
+
+# JavaScript API
 
 ## HTTP requests
-You can make `GET`,`POST` requests to the [Google Docs API](https://developers.google.com/docs/api/reference/rest) like this:
+You can make `POST` and `GET`requests to the [Google Docs API](https://developers.google.com/docs/api/how-tos/overview?hl=es-419) like this:
 ```javascript
 var response = pkg.googledocs.api.get('/documents/{documentId}')
 var response = pkg.googledocs.api.post('/documents', body)
 var response = pkg.googledocs.api.post('/documents/{documentId}:batchUpdate', body)
-
 ```
 
-## Flow Step
+## Events
 
-As an alternative option to using scripts, you can make use of Flows and Flow Steps specifically created for the package:
-<details>
-    <summary>Click here to see the Flow Steps</summary>
-
-<br>
-
-### Generic Flow Step
-
-Generic flow step for full use of the entire package and its services.
-
-<h3>Inputs</h3>
-
-<table>
-    <thead>
-    <tr>
-        <th>Label</th>
-        <th>Type</th>
-        <th>Required</th>
-        <th>Default</th>
-        <th>Visibility</th>
-        <th>Description</th>
-    </tr>
-    </thead>
-    <tbody>
-    <tr>
-        <td>URL (Method)</td>
-        <td>choice</td>
-        <td>yes</td>
-        <td> - </td>
-        <td>Always</td>
-        <td>
-            This is the http method to be used against the package. <br>
-            Possible values are: <br>
-            <i><strong>GET,PUT,PATCH,DELETE</strong></i>
-        </td>
-    </tr>
-    <tr>
-        <td>URL (Path)</td>
-        <td>choice</td>
-        <td>yes</td>
-        <td> - </td>
-        <td>Always</td>
-        <td>
-            The url to which this package will send the request. This is the exact service to which the http request will be made. <br>
-            Possible values are: <br>
-            <i><strong>/testPath<br>/path3<br>/path1/{testPath}<br>/path2?param2=' + httpOptions.query.param2 + '&param3=' + httpOptions.query.param3 + '<br>/path4<br></strong></i>
-        </td>
-    </tr>
-    <tr>
-        <td>Headers</td>
-        <td>keyValue</td>
-        <td>no</td>
-        <td> - </td>
-        <td>Always</td>
-        <td>
-            Used when you want to have a custom http header for the request.
-        </td>
-    </tr>
-    <tr>
-        <td>Query Params</td>
-        <td>keyValue</td>
-        <td>no</td>
-        <td> - </td>
-        <td>Always</td>
-        <td>
-            Used when you want to have a custom query params for the http call.
-        </td>
-    </tr>
-    <tr>
-        <td>Body</td>
-        <td>json</td>
-        <td>no</td>
-        <td> - </td>
-        <td>Always</td>
-        <td>
-            A payload of data can be sent to the server in the body of the request.
-        </td>
-    </tr>
-    <tr>
-        <td>Override Settings</td>
-        <td>boolean</td>
-        <td>no</td>
-        <td> false </td>
-        <td>Always</td>
-        <td></td>
-    </tr>
-    <tr>
-        <td>Follow Redirect</td>
-        <td>boolean</td>
-        <td>no</td>
-        <td> false </td>
-        <td> overrideSettings </td>
-        <td>It Indicates that the resource has to be downloaded into a file instead of returning it in the response.</td>
-    </tr>
-    <tr>
-        <td>Download</td>
-        <td>boolean</td>
-        <td>no</td>
-        <td> false </td>
-        <td> overrideSettings </td>
-        <td>If true, the method won't return until the file has been downloaded, and it will return all the information of the file.</td>
-    </tr>
-    <tr>
-        <td>File name</td>
-        <td>text</td>
-        <td>no</td>
-        <td></td>
-        <td> overrideSettings </td>
-        <td>If provided, the file will be stored with this name. If empty, the file name will be calculated from the URL.</td>
-    </tr>
-    <tr>
-        <td>Full response</td>
-        <td> boolean </td>
-        <td>no</td>
-        <td> false </td>
-        <td> overrideSettings </td>
-        <td>Includes extended information about response</td>
-    </tr>
-    <tr>
-        <td>Connection Timeout</td>
-        <td> number </td>
-        <td>no</td>
-        <td> 5000 </td>
-        <td> overrideSettings </td>
-        <td>Connect a timeout interval in milliseconds (0 = infinity).</td>
-    </tr>
-    <tr>
-        <td>Read Timeout</td>
-        <td> number </td>
-        <td>no</td>
-        <td> 60000 </td>
-        <td> overrideSettings </td>
-        <td>Read a timeout interval in milliseconds (0 = infinity).</td>
-    </tr>
-    </tbody>
-</table>
-
-<h3>Outputs</h3>
-
-<table>
-    <thead>
-    <tr>
-        <th>Name</th>
-        <th>Type</th>
-        <th>Description</th>
-    </tr>
-    </thead>
-    <tbody>
-    <tr>
-        <td>response</td>
-        <td>object</td>
-        <td>
-            Object resulting from the response to the package call.
-        </td>
-    </tr>
-    </tbody>
-</table>
-
-
-</details>
+The Google Docs API does not generate webhooks for events. However, you can receive webhooks for file modifications through the Google Drive API. For more information, please refer to the [Google Drive Package documentation](https://github.com/slingr-stack/google-drive-package).
 
 ## Dependencies
-* HTTP Service (v1.3.7)
-* Oauth Package (v1.0.24)
+* HTTP Service
+* Oauth Package
 
-## About SLINGR
+# About Slingr
 
-SLINGR is a low-code rapid application development platform that accelerates development, with robust architecture for integrations and executing custom workflows and automation.
+Slingr is a low-code rapid application development platform that accelerates development, with robust architecture for integrations and executing custom workflows and automation.
 
-[More info about SLINGR](https://slingr.io)
+[More info about Slingr](https://slingr.io)
 
-## License
+# License
 
 This package is licensed under the Apache License 2.0. See the `LICENSE` file for more details.

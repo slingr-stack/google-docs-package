@@ -1,46 +1,77 @@
 {
     "name": "googledocs",
-    "label": "Google Docs Package",
+    "label": "Google Docs",
     "dependencies": [
         {
             "type": "service",
             "name": "http",
-            "version": "v1.3.7",
-            "instanceId": "shared"
+            "version": "v1.8.5"
         },
         {
             "type": "package",
             "name": "oauth",
-            "version": "v1.0.24"
+            "version": "v1.0.34"
         }
     ],
     "configurationBuilder": "/configurationBuilder.js",
     "configuration": [
         {
+            "name": "authenticationMethod",
+            "label": "Authentication Method",
+            "required": true,
+            "defaultValue": "serviceAccount",
+            "type": "buttonsGroup",
+            "typeOptions": {
+                "allowCustom": false,
+                "possibleValues": [
+                    {
+                        "label": "Service Account",
+                        "name": "serviceAccount"
+                    },
+                    {
+                        "label": "OAuth 2.0",
+                        "name": "oAuth2"
+                    }
+                ]
+            }
+        },
+        {
+            "name": "serviceAccountEmail",
+            "label": "Service Account Email",
+            "description": "The email from service account created",
+            "type": "text",
+            "required": "config.authenticationMethod == 'serviceAccount'",
+            "visibility": "config.authenticationMethod == 'serviceAccount'"
+        },
+        {
+            "name": "privateKey",
+            "label": "Private Key",
+            "description": "The private key associated to the service account",
+            "type": "password",
+            "required": "config.authenticationMethod == 'serviceAccount'",
+            "visibility": "config.authenticationMethod == 'serviceAccount'"
+        },
+        {
             "label": "Client Id",
             "name": "clientId",
             "description": "The ID for your client application registered with the API provider.",
             "required": "true",
-            "type": "text"
+            "type": "text",
+            "visibility": "config.authenticationMethod == 'oAuth2'"
         },
         {
             "label": "Client Secret",
             "name": "clientSecret",
             "description": "The client secret given to you by the API provider",
             "required": "true",
-            "type": "text"
+            "type": "text",
+            "visibility": "config.authenticationMethod == 'oAuth2'"
         },
         {
             "label": "Scope",
             "name": "scope",
             "description": "The scope of access you are requesting, which may include multiple space-separated values.",
             "required": "true",
-            "type": "text"
-        },
-        {
-            "label": "State",
-            "name": "state",
-            "description": "An opaque value to prevent cross-site request forgery.",
             "type": "text"
         },
         {
@@ -51,25 +82,13 @@
             "value": "config.AUTH_CALLBACK_URL+'/authCallback'"
         },
         {
-            "name": "webhooksUrl",
-            "label": "Webhooks URL",
-            "description": "The URL to configure in webhooks of your Google Docs App",
-            "type": "label",
-            "value": "config.WEBHOOK_URL"
-        },
-        {
             "name": "GOOGLE_DOCS_API_BASE_URL",
-            "label": "Google Docs Api Url",
+            "label": "Google Docs API Url",
             "type": "label",
             "value": "https://docs.googleapis.com/v1"
         }
     ],
     "events": [
-        {
-            "label": "Webhook",
-            "name": "webhook",
-            "description": "Happens when Google Docs sends a webhook to the package."
-        },
         {
             "label": "User connected to Google Docs",
             "name": "userConnected",
@@ -83,14 +102,9 @@
             "path": "/scripts/api.js"
         },
         {
-            "type": "listener",
-            "namespace": "listeners",
-            "path": "/listeners/webhook.js"
-        },
-        {
-            "type": "flowStep",
-            "namespace": "apiCallGoogleDocs",
-            "path": "/flowSteps/apiCallGoogleDocs"
+            "type": "script",
+            "namespace": "utils",
+            "path": "/scripts/utils.js"
         }
     ]
 }
