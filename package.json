@@ -19,7 +19,7 @@
             "name": "authenticationMethod",
             "label": "Authentication Method",
             "required": true,
-            "defaultValue": "oAuth2",
+            "defaultValue": "serviceAccount",
             "type": "buttonsGroup",
             "typeOptions": {
                 "allowCustom": false,
@@ -75,12 +75,6 @@
             "type": "text"
         },
         {
-            "label": "State",
-            "name": "state",
-            "description": "An opaque value to prevent cross-site request forgery.",
-            "type": "text"
-        },
-        {
             "name": "oauthCallback",
             "label": "OAuth callback",
             "description": "The OAuth callback to configure in your Google Docs App",
@@ -88,15 +82,8 @@
             "value": "config.AUTH_CALLBACK_URL+'/authCallback'"
         },
         {
-            "name": "webhooksUrl",
-            "label": "Webhooks URL",
-            "description": "The URL to configure in webhooks of your Google Docs App",
-            "type": "label",
-            "value": "config.WEBHOOK_URL"
-        },
-        {
             "name": "GOOGLE_DOCS_API_BASE_URL",
-            "label": "Google Docs Api Url",
+            "label": "Google Docs API Url",
             "type": "label",
             "value": "https://docs.googleapis.com/v1"
         }
